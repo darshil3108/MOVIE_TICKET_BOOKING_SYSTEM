@@ -1,0 +1,86 @@
+{% extends 'booking/admin/base_admin.html' %}
+
+{% block title %}{{ title }} - Admin Panel{% endblock %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="admin-breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'admin_seat_list' %}">Seats</a></li>
+        <li class="breadcrumb-item active">{{ title }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="admin-card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-plus-circle-fill"></i> {{ title }}</h5>
+    </div>
+    
+    <div class="card-body">
+        <div class="alert alert-info">
+            <h6><i class="bi bi-info-circle"></i> Bulk Seat Creation</h6>
+            <p class="mb-0">This will create multiple seats at once for the selected theater. Existing seats will be skipped.</p>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.theater.id_for_label }}" class="form-label">Theater *</label>
+                        {{ form.theater }}
+                        {% if form.theater.errors %}
+                            <div class="text-danger">{{ form.theater.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.seat_type.id_for_label }}" class="form-label">Seat Type *</label>
+                        {{ form.seat_type }}
+                        {% if form.seat_type.errors %}
+                            <div class="text-danger">{{ form.seat_type.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.rows.id_for_label }}" class="form-label">Rows *</label>
+                        {{ form.rows }}
+                        {% if form.rows.errors %}
+                            <div class="text-danger">{{ form.rows.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.seats_per_row.id_for_label }}" class="form-label">Seats per Row *</label>
+                        {{ form.seats_per_row }}
+                        {% if form.seats_per_row.errors %}
+                            <div class="text-danger">{{ form.seats_per_row.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-warning">
+                <h6><i class="bi bi-exclamation-triangle"></i> Preview</h6>
+                <p class="mb-0">This will create seats for the specified rows and numbers. For example, if you enter "A,B,C" for rows and "10" for seats per row, it will create seats A1-A10, B1-B10, and C1-C10.</p>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'admin_seat_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Seats
+                </a>
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-plus-circle-fill"></i> Create Seats
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

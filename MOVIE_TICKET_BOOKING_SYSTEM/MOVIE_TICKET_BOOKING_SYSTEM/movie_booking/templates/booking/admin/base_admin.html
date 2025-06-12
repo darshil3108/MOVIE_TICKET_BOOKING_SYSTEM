@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Panel - MovieBooking{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Custom Admin CSS -->
+    <style>
+        :root {
+            --admin-primary: #0d6efd;
+            --admin-secondary: #6c757d;
+            --admin-success: #198754;
+            --admin-danger: #dc3545;
+            --admin-warning: #ffc107;
+            --admin-info: #0dcaf0;
+            --admin-dark: #212529;
+            --admin-light: #f8f9fa;
+        }
+        
+        body {
+            background-color: var(--admin-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .admin-sidebar {
+            background-color: var(--admin-dark);
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+        
+        .admin-sidebar.collapsed {
+            width: 70px;
+        }
+        
+        .admin-sidebar .nav-link {
+            color: #adb5bd;
+            padding: 12px 20px;
+            border-radius: 0;
+            transition: all 0.3s;
+        }
+        
+        .admin-sidebar .nav-link:hover,
+        .admin-sidebar .nav-link.active {
+            color: white;
+            background-color: var(--admin-primary);
+        }
+        
+        .admin-sidebar .nav-link i {
+            width: 20px;
+            margin-right: 10px;
+        }
+        
+        .admin-content {
+            margin-left: 250px;
+            transition: all 0.3s;
+            min-height: 100vh;
+        }
+        
+        .admin-content.expanded {
+            margin-left: 70px;
+        }
+        
+        .admin-header {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+            padding: 15px 30px;
+            margin-bottom: 30px;
+        }
+        
+        .admin-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,.1);
+            border: none;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, var(--admin-primary), #0056b3);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .stats-card.success {
+            background: linear-gradient(135deg, var(--admin-success), #146c43);
+        }
+        
+        .stats-card.warning {
+            background: linear-gradient(135deg, var(--admin-warning), #e6a700);
+            color: var(--admin-dark);
+        }
+        
+        .stats-card.info {
+            background: linear-gradient(135deg, var(--admin-info), #0aa2c0);
+        }
+        
+        .table-actions {
+            white-space: nowrap;
+        }
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: #adb5bd;
+            font-size: 1.2rem;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .sidebar-toggle:hover {
+            color: white;
+        }
+        
+        .admin-breadcrumb {
+            background: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+        
+        .admin-breadcrumb .breadcrumb-item a {
+            color: var(--admin-primary);
+            text-decoration: none;
+        }
+        
+        .form-floating > label {
+            color: var(--admin-secondary);
+        }
+        
+        .pagination .page-link {
+            color: var(--admin-primary);
+        }
+        
+        .pagination .page-item.active .page-link {
+            background-color: var(--admin-primary);
+            border-color: var(--admin-primary);
+        }
+        
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                width: 70px;
+            }
+            
+            .admin-content {
+                margin-left: 70px;
+            }
+            
+            .admin-sidebar .nav-link span {
+                display: none;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="admin-sidebar" id="adminSidebar">
+        <div class="p-3">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">
+                <i class="bi bi-list"></i>
+            </button>
+            
+            <div class="text-center mb-4">
+                <h5 class="text-white mb-0">
+                    <i class="bi bi-shield-check"></i>
+                    <span class="sidebar-text">Admin Panel</span>
+                </h5>
+            </div>
+            
+            <ul class="nav nav-pills flex-column">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}" 
+                       href="{% url 'admin_dashboard' %}">
+                        <i class="bi bi-speedometer2"></i>
+                        <span class="sidebar-text">Dashboard</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link {% if 'movie' in request.resolver_match.url_name %}active{% endif %}" 
+                       href="{% url 'admin_movie_list' %}">
+                        <i class="bi bi-film"></i>
+                        <span class="sidebar-text">Movies</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link {% if 'theater' in request.resolver_match.url_name %}active{% endif %}" 
+                       href="{% url 'admin_theater_list' %}">
+                        <i class="bi bi-building"></i>
+                        <span class="sidebar-text">Theaters</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link {% if 'show' in request.resolver_match.url_name %}active{% endif %}" 
+                       href="{% url 'admin_show_list' %}">
+                        <i class="bi bi-calendar-week"></i>
+                        <span class="sidebar-text">Shows</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link {% if 'seat' in request.resolver_match.url_name %}active{% endif %}" 
+                       href="{% url 'admin_seat_list' %}">
+                        <i class="bi bi-grid-3x3-gap"></i>
+                        <span class="sidebar-text">Seats</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link {% if 'booking' in request.resolver_match.url_name %}active{% endif %}" 
+                       href="{% url 'admin_booking_list' %}">
+                        <i class="bi bi-ticket-perforated"></i>
+                        <span class="sidebar-text">Bookings</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link {% if 'genre' in request.resolver_match.url_name %}active{% endif %}" 
+                       href="{% url 'admin_genre_list' %}">
+                        <i class="bi bi-tags"></i>
+                        <span class="sidebar-text">Genres</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link {% if 'seat_type' in request.resolver_match.url_name %}active{% endif %}" 
+                       href="{% url 'admin_seat_type_list' %}">
+                        <i class="bi bi-collection"></i>
+                        <span class="sidebar-text">Seat Types</span>
+                    </a>
+                </li>
+                
+                {% if user.is_superuser %}
+                <li class="nav-item">
+                    <a class="nav-link {% if 'user' in request.resolver_match.url_name %}active{% endif %}" 
+                       href="{% url 'admin_user_list' %}">
+                        <i class="bi bi-people"></i>
+                        <span class="sidebar-text">Users</span>
+                    </a>
+                </li>
+                {% endif %}
+                
+                <hr class="text-white">
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'home' %}">
+                        <i class="bi bi-house"></i>
+                        <span class="sidebar-text">Back to Site</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'logout' %}">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span class="sidebar-text">Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="admin-content" id="adminContent">
+        <!-- Header -->
+        <div class="admin-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-0">{% block page_title %}Admin Panel{% endblock %}</h4>
+                    {% block breadcrumb %}{% endblock %}
+                </div>
+                <div>
+                    <span class="text-muted">Welcome, {{ user.first_name|default:user.username }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="container-fluid">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-triangle{% elif message.tags == 'warning' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <!-- Page Content -->
+        <div class="container-fluid">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('adminSidebar');
+            const content = document.getElementById('adminContent');
+            
+            sidebar.classList.toggle('collapsed');
+            content.classList.toggle('expanded');
+        }
+        
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

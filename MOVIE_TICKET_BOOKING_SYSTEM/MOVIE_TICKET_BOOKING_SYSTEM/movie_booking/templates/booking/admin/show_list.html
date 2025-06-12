@@ -1,0 +1,172 @@
+{% extends 'booking/admin/base_admin.html' %}
+
+{% block title %}Shows - Admin Panel{% endblock %}
+
+{% block page_title %}Shows Management{% endblock %}
+
+{% block breadcrumb %}
+<nav class="admin-breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active">Shows</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="admin-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-calendar-week"></i> Shows</h5>
+        <a href="{% url 'admin_show_add' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add Show
+        </a>
+    </div>
+    
+    <div class="card-body">
+        <!-- Search and Filter -->
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <form method="get">
+                    <input type="date" name="date" class="form-control" 
+                           value="{{ date_filter }}" onchange="this.form.submit()">
+                </form>
+            </div>
+            <div class="col-md-3">
+                <form method="get">
+                    <select name="theater" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Theaters</option>
+                        {% for theater in theaters %}
+                            <option value="{{ theater.id }}" {% if theater_filter == theater.id|stringformat:"s" %}selected{% endif %}>
+                                {{ theater.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+            <div class="col-md-3">
+                <form method="get">
+                    <select name="movie" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Movies</option>
+                        {% for movie in movies %}
+                            <option value="{{ movie.id }}" {% if movie_filter == movie.id|stringformat:"s" %}selected{% endif %}>
+                                {{ movie.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Shows Table -->
+        {% if page_obj %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Movie</th>
+                            <th>Theater</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for show in page_obj %}
+                            <tr>
+                                <td>
+                                    <strong>{{ show.movie.title }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ show.movie.duration }}min</small>
+                                </td>
+                                <td>
+                                    {{ show.theater.name }}
+                                    <br>
+                                    <small class="text-muted">{{ show.theater.city }}</small>
+                                </td>
+                                <td>{{ show.date|date:"M d, Y" }}</td>
+                                <td>{{ show.time|time:"g:i A" }}</td>
+                                <td>₹{{ show.base_price }}</td>
+                                <td>
+                                    <span class="badge bg-{% if show.is_active %}success{% else %}secondary{% endif %}">
+                                        {% if show.is_active %}Active{% else %}Inactive{% endif %}
+                                    </span>
+                                </td>
+                                <td class="table-actions">
+                                    <a href="{% url 'admin_show_edit' show.id %}" 
+                                       class="btn btn-sm btn-outline-primary" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'seat_selection' show.id %}" 
+                                       class="btn btn-sm btn-outline-info" title="View Seats" target="_blank">
+                                        <i class="bi bi-grid-3x3-gap"></i>
+                                    </a>
+                                    <a href="{% url 'admin_show_delete' show.id %}" 
+                                       class="btn btn-sm btn-outline-danger" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+                <nav aria-label="Show pagination">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if date_filter %}&date={{ date_filter }}{% endif %}{% if theater_filter %}&theater={{ theater_filter }}{% endif %}{% if movie_filter %}&movie={{ movie_filter }}{% endif %}">
+                                    <i class="bi bi-chevron-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if date_filter %}&date={{ date_filter }}{% endif %}{% if theater_filter %}&theater={{ theater_filter }}{% endif %}{% if movie_filter %}&movie={{ movie_filter }}{% endif %}">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if date_filter %}&date={{ date_filter }}{% endif %}{% if theater_filter %}&theater={{ theater_filter }}{% endif %}{% if movie_filter %}&movie={{ movie_filter }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if date_filter %}&date={{ date_filter }}{% endif %}{% if theater_filter %}&theater={{ theater_filter }}{% endif %}{% if movie_filter %}&movie={{ movie_filter }}{% endif %}">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if date_filter %}&date={{ date_filter }}{% endif %}{% if theater_filter %}&theater={{ theater_filter }}{% endif %}{% if movie_filter %}&movie={{ movie_filter }}{% endif %}">
+                                    <i class="bi bi-chevron-double-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-calendar-week display-1 text-muted"></i>
+                <h5 class="mt-3">No shows found</h5>
+                <p class="text-muted">Start by adding your first show.</p>
+                <a href="{% url 'admin_show_add' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Add Show
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

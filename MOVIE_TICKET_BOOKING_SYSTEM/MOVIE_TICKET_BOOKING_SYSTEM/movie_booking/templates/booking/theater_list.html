@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Theaters - MovieBooking{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1><i class="bi bi-building"></i> Theaters</h1>
+    </div>
+</div>
+
+<!-- City Filter -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <form method="get">
+            <select name="city" class="form-select" onchange="this.form.submit()">
+                <option value="">All Cities</option>
+                {% for city in cities %}
+                    <option value="{{ city }}" {% if current_city == city %}selected{% endif %}>
+                        {{ city }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+</div>
+
+<!-- Theater Grid -->
+<div class="row">
+    {% for theater in theaters %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ theater.name }}</h5>
+                    <p class="card-text">
+                        <i class="bi bi-geo-alt"></i> {{ theater.address }}, {{ theater.city }}
+                    </p>
+                    <p class="card-text">
+                        <i class="bi bi-people"></i> Capacity: {{ theater.total_capacity }} seats
+                    </p>
+                    {% if theater.contact_number %}
+                        <p class="card-text">
+                            <i class="bi bi-telephone"></i> {{ theater.contact_number }}
+                        </p>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'theater_detail' theater.id %}" class="btn btn-primary w-100">
+                        <i class="bi bi-calendar-week"></i> View Shows
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="bi bi-building"></i> No theaters found.
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

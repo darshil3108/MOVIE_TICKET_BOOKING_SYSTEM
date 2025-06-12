@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ theater.name }} - MovieBooking{% endblock %}
+
+{% block content %}
+<!-- Theater Info -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h1 class="card-title">{{ theater.name }}</h1>
+                <p class="card-text">
+                    <i class="bi bi-geo-alt"></i> {{ theater.address }}, {{ theater.city }}
+                </p>
+                <p class="card-text">
+                    <i class="bi bi-people"></i> Total Capacity: {{ theater.total_capacity }} seats
+                </p>
+                {% if theater.contact_number %}
+                    <p class="card-text">
+                        <i class="bi bi-telephone"></i> {{ theater.contact_number }}
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Show Schedule -->
+<div class="row">
+    <div class="col-12">
+        <h3 class="mb-4"><i class="bi bi-calendar-week"></i> Show Schedule</h3>
+        
+        {% if shows_by_date %}
+            <ul class="nav nav-tabs mb-3" id="showTabs" role="tablist">
+                {% for date, shows in shows_by_date.items %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {% if forloop.first %}active{% endif %}" 
+                                id="date-{{ date|date:'Ymd' }}-tab" 
+                                data-bs-toggle="tab" 
+                                data-bs-target="#date-{{ date|date:'Ymd' }}" 
+                                type="button" 
+                                role="tab">
+                            {{ date|date:"D, M d" }}
+                        </button>
+                    </li>
+                {% endfor %}
+            </ul>
+            
+            <div class="tab-content" id="showTabsContent">
+                {% for date, shows in shows_by_date.items %}
+                    <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+                         id="date-{{ date|date:'Ymd' }}" 
+                         role="tabpanel">
+                        
+                        <div class="row">
+                            {% for show in shows %}
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title">{{ show.movie.title }}</h6>
+                                            <p class="card-text">
+                                                <span class="badge bg-secondary">{{ show.movie.duration }}min</span>
+                                                <span class="badge badge-rating">★ {{ show.movie.rating }}</span>
+                                            </p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <strong class="text-primary">₹{{ show.base_price }}</strong>
+                                                    <br>
+                                                    <small>{{ show.time|time:"g:i A" }}</small>
+                                                </div>
+                                                {% if user.is_authenticated %}
+                                                    <a href="{% url 'seat_selection' show.id %}" 
+                                                       class="btn btn-primary btn-sm">
+                                                        <i class="bi bi-ticket"></i> Book Now
+                                                    </a>
+                                                {% else %}
+                                                    <a href="{% url 'login' %}" class="btn btn-outline-primary btn-sm">
+                                                        Login to Book
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-calendar-x"></i> No shows scheduled at this theater at the moment.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

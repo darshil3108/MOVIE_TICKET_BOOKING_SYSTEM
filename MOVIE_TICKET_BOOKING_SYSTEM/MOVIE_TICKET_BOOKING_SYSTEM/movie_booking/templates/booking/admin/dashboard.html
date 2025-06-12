@@ -1,0 +1,234 @@
+{% extends 'booking/admin/base_admin.html' %}
+
+{% block title %}Dashboard - Admin Panel{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block breadcrumb %}
+<nav class="admin-breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">Dashboard</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="mb-0">{{ total_movies }}</h3>
+                    <p class="mb-0">Total Movies</p>
+                </div>
+                <i class="bi bi-film display-4"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stats-card success">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="mb-0">{{ total_theaters }}</h3>
+                    <p class="mb-0">Total Theaters</p>
+                </div>
+                <i class="bi bi-building display-4"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stats-card warning">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="mb-0">{{ total_bookings }}</h3>
+                    <p class="mb-0">Total Bookings</p>
+                </div>
+                <i class="bi bi-ticket-perforated display-4"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stats-card info">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="mb-0">₹{{ total_revenue|floatformat:2 }}</h3>
+                    <p class="mb-0">Total Revenue</p>
+                </div>
+                <i class="bi bi-cash-stack display-4"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Bookings -->
+    <div class="col-lg-8">
+        <div class="admin-card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Bookings</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_bookings %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>Movie</th>
+                                    <th>Theater</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in recent_bookings %}
+                                    <tr>
+                                        <td><strong>#{{ booking.id }}</strong></td>
+                                        <td>{{ booking.user.username }}</td>
+                                        <td>{{ booking.show.movie.title|truncatechars:20 }}</td>
+                                        <td>{{ booking.show.theater.name|truncatechars:15 }}</td>
+                                        <td>₹{{ booking.total_amount }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if booking.status == 'confirmed' %}success{% elif booking.status == 'pending' %}warning{% else %}danger{% endif %}">
+                                                {{ booking.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ booking.booking_date|date:"M d, H:i" }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center">
+                        <a href="{% url 'admin_booking_list' %}" class="btn btn-primary">View All Bookings</a>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">No recent bookings found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Popular Movies -->
+    <div class="col-lg-4">
+        <div class="admin-card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-star"></i> Popular Movies</h5>
+            </div>
+            <div class="card-body">
+                {% if popular_movies %}
+                    {% for movie in popular_movies %}
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h6 class="mb-0">{{ movie.title|truncatechars:25 }}</h6>
+                                <small class="text-muted">{{ movie.booking_count }} booking{{ movie.booking_count|pluralize }}</small>
+                            </div>
+                            <span class="badge bg-primary">{{ movie.rating }}</span>
+                        </div>
+                    {% endfor %}
+                    <div class="text-center">
+                        <a href="{% url 'admin_movie_list' %}" class="btn btn-outline-primary btn-sm">View All Movies</a>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">No popular movies data available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Today's Shows -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="admin-card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-calendar-day"></i> Today's Shows</h5>
+            </div>
+            <div class="card-body">
+                {% if today_shows %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Movie</th>
+                                    <th>Theater</th>
+                                    <th>Time</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for show in today_shows %}
+                                    <tr>
+                                        <td>{{ show.movie.title }}</td>
+                                        <td>{{ show.theater.name }}</td>
+                                        <td>{{ show.time|time:"g:i A" }}</td>
+                                        <td>₹{{ show.base_price }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if show.is_active %}success{% else %}secondary{% endif %}">
+                                                {% if show.is_active %}Active{% else %}Inactive{% endif %}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'admin_show_edit' show.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center">
+                        <a href="{% url 'admin_show_list' %}" class="btn btn-primary">View All Shows</a>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">No shows scheduled for today.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="admin-card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'admin_movie_add' %}" class="btn btn-primary w-100">
+                            <i class="bi bi-plus-circle"></i> Add Movie
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'admin_theater_add' %}" class="btn btn-success w-100">
+                            <i class="bi bi-plus-circle"></i> Add Theater
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'admin_show_add' %}" class="btn btn-warning w-100">
+                            <i class="bi bi-plus-circle"></i> Add Show
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'admin_seat_bulk_add' %}" class="btn btn-info w-100">
+                            <i class="bi bi-plus-circle"></i> Bulk Add Seats
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends 'booking/admin/base_admin.html' %}
+
+{% block title %}Booking #{{ booking.id }} - Admin Panel{% endblock %}
+
+{% block page_title %}Booking Details{% endblock %}
+
+{% block breadcrumb %}
+<nav class="admin-breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'admin_booking_list' %}">Bookings</a></li>
+        <li class="breadcrumb-item active">Booking #{{ booking.id }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="admin-card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-ticket-perforated"></i> Booking #{{ booking.id }}</h5>
+            </div>
+            
+            <div class="card-body">
+                <!-- Booking Information -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-person"></i> Customer Information</h6>
+                        <p><strong>Name:</strong> {{ booking.user.first_name }} {{ booking.user.last_name }}</p>
+                        <p><strong>Username:</strong> {{ booking.user.username }}</p>
+                        <p><strong>Email:</strong> {{ booking.user.email }}</p>
+                        {% if booking.user.profile.phone_number %}
+                            <p><strong>Phone:</strong> {{ booking.user.profile.phone_number }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-info-circle"></i> Booking Information</h6>
+                        <p><strong>Booking Date:</strong> {{ booking.booking_date|date:"M d, Y g:i A" }}</p>
+                        <p><strong>Status:</strong> 
+                            <span class="badge bg-{% if booking.status == 'confirmed' %}success{% elif booking.status == 'pending' %}warning{% else %}danger{% endif %}">
+                                {{ booking.get_status_display }}
+                            </span>
+                        </p>
+                        <p><strong>Total Amount:</strong> <span class="text-success fs-5">₹{{ booking.total_amount }}</span></p>
+                    </div>
+                </div>
+                
+                <!-- Show Information -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-film"></i> Movie Information</h6>
+                        <p><strong>Title:</strong> {{ booking.show.movie.title }}</p>
+                        <p><strong>Duration:</strong> {{ booking.show.movie.duration }} minutes</p>
+                        <p><strong>Rating:</strong> {{ booking.show.movie.rating }}/10</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-building"></i> Theater & Show Information</h6>
+                        <p><strong>Theater:</strong> {{ booking.show.theater.name }}</p>
+                        <p><strong>Location:</strong> {{ booking.show.theater.city }}</p>
+                        <p><strong>Show Date:</strong> {{ booking.show.date|date:"D, M d, Y" }}</p>
+                        <p><strong>Show Time:</strong> {{ booking.show.time|time:"g:i A" }}</p>
+                    </div>
+                </div>
+                
+                <!-- Seat Information -->
+                <h6><i class="bi bi-grid-3x3-gap"></i> Seat Details</h6>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Seat</th>
+                                <th>Type</th>
+                                <th>Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking_seat in booking_seats %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-primary fs-6">
+                                            {{ booking_seat.seat.row }}{{ booking_seat.seat.number }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if booking_seat.seat.seat_type.name == 'Regular' %}secondary{% elif booking_seat.seat.seat_type.name == 'Premium' %}warning{% else %}info{% endif %}">
+                                            {{ booking_seat.seat.seat_type.name }}
+                                        </span>
+                                    </td>
+                                    <td>₹{{ booking_seat.price }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-dark">
+                                <th colspan="2">Total Amount</th>
+                                <th>${{ booking.total_amount }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Status Update -->
+        <div class="admin-card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-gear"></i> Actions</h6>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'admin_booking_update_status' booking.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Update Status</label>
+                        <select name="status" id="status" class="form-select">
+                            {% for value, label in booking.STATUS_CHOICES %}
+                                <option value="{{ value }}" {% if booking.status == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-check-circle"></i> Update Status
+                    </button>
+                </form>
+                
+                <hr>
+                
+                <div class="d-grid gap-2">
+                    <a href="{% url 'booking_detail' booking.id %}" 
+                       class="btn btn-outline-info" target="_blank">
+                        <i class="bi bi-eye"></i> View Customer View
+                    </a>
+                    <a href="{% url 'admin_booking_list' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Bookings
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Stats -->
+        <div class="admin-card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-bar-chart"></i> Quick Stats</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>Seats Booked:</strong> {{ booking_seats.count }}</p>
+                <p><strong>Show Capacity:</strong> {{ booking.show.theater.total_capacity }}</p>
+                <p><strong>User's Total Bookings:</strong> {{ booking.user.bookings.count }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends 'booking/admin/base_admin.html' %}
+
+{% block title %}{{ title }} - Admin Panel{% endblock %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="admin-breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'admin_seat_type_list' %}">Seat Types</a></li>
+        <li class="breadcrumb-item active">{{ title }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="admin-card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-collection"></i> {{ title }}</h5>
+    </div>
+    
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">Seat Type Name *</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <div class="text-danger">{{ form.name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.price_multiplier.id_for_label }}" class="form-label">Price Multiplier *</label>
+                        {{ form.price_multiplier }}
+                        <div class="form-text">Base price will be multiplied by this value</div>
+                        {% if form.price_multiplier.errors %}
+                            <div class="text-danger">{{ form.price_multiplier.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info">
+                <h6><i class="bi bi-info-circle"></i> Examples</h6>
+                <ul class="mb-0">
+                    <li><strong>Regular:</strong> 1.0 (no price change)</li>
+                    <li><strong>Premium:</strong> 1.5 (50% more expensive)</li>
+                    <li><strong>Recliner:</strong> 2.0 (double the price)</li>
+                </ul>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'admin_seat_type_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Seat Types
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> Save Seat Type
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,129 @@
+{% extends 'booking/admin/base_admin.html' %}
+
+{% block title %}{{ title }} - Admin Panel{% endblock %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="admin-breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'admin_movie_list' %}">Movies</a></li>
+        <li class="breadcrumb-item active">{{ title }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="admin-card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-film"></i> {{ title }}</h5>
+    </div>
+    
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="mb-3">
+                        <label for="{{ form.title.id_for_label }}" class="form-label">Title *</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="text-danger">{{ form.title.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Description *</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger">{{ form.description.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.duration.id_for_label }}" class="form-label">Duration (minutes) *</label>
+                                {{ form.duration }}
+                                {% if form.duration.errors %}
+                                    <div class="text-danger">{{ form.duration.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.rating.id_for_label }}" class="form-label">Rating (1-10) *</label>
+                                {{ form.rating }}
+                                {% if form.rating.errors %}
+                                    <div class="text-danger">{{ form.rating.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.release_date.id_for_label }}" class="form-label">Release Date *</label>
+                        {{ form.release_date }}
+                        {% if form.release_date.errors %}
+                            <div class="text-danger">{{ form.release_date.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.trailer_url.id_for_label }}" class="form-label">Trailer URL</label>
+                        {{ form.trailer_url }}
+                        {% if form.trailer_url.errors %}
+                            <div class="text-danger">{{ form.trailer_url.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="{{ form.poster.id_for_label }}" class="form-label">Poster</label>
+                        {{ form.poster }}
+                        {% if form.poster.errors %}
+                            <div class="text-danger">{{ form.poster.errors.0 }}</div>
+                        {% endif %}
+                        {% if movie and movie.poster %}
+                            <div class="mt-2">
+                                <img src="{{ movie.poster.url }}" alt="Current poster" 
+                                     class="img-thumbnail" style="max-width: 200px;">
+                                <p class="small text-muted mt-1">Current poster</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Genres *</label>
+                        <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                            {% for choice in form.genres %}
+                                <div class="form-check">
+                                    {{ choice.tag }}
+                                    <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                        {{ choice.choice_label }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.genres.errors %}
+                            <div class="text-danger">{{ form.genres.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'admin_movie_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Movies
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> Save Movie
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
